@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NTSIX NETWORK // RIYAD HOSSAIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04050d;--panel:rgba(4,8,22,0.88);--border:rgba(0,255,255,0.13);
+  --green:#00ff88;--cyan:#00ffff;--pink:#ff2d9b;--yellow:#ffe600;--red:#ff003c;
+  --mono:'Share Tech Mono',monospace;--orb:'Orbitron',monospace;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--mono);color:#fff;}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--green);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;box-shadow:0 0 8px var(--green);transition:transform .1s;}
+#cur-ring{position:fixed;width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,255,136,0.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .13s ease;}
+
+/* ══════════════════════════════
+   INTRO
+══════════════════════════════ */
+#intro{position:fixed;inset:0;z-index:1000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+#intro-canvas{position:absolute;inset:0;opacity:.35;}
+.intro-inner{position:relative;z-index:2;text-align:center;}
+.intro-logo{font-family:var(--orb);font-size:clamp(50px,10vw,100px);font-weight:900;line-height:1;letter-spacing:4px;background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,255,255,.6));animation:lp 2s ease infinite;}
+@keyframes lp{0%,100%{filter:drop-shadow(0 0 20px rgba(0,255,255,.5))}50%{filter:drop-shadow(0 0 60px rgba(255,45,155,.8))}}
+.intro-sub{font-family:var(--orb);font-size:clamp(9px,1.8vw,16px);letter-spacing:6px;color:rgba(0,255,255,.5);margin:8px 0 36px;}
+.intro-terminal{width:min(420px,88vw);text-align:left;background:rgba(0,0,0,.75);border:1px solid rgba(0,255,136,.25);border-radius:6px;padding:18px;font-size:12px;line-height:2;margin-bottom:28px;}
+.it{opacity:0;transform:translateX(-8px);transition:all .3s;display:block;}
+.it.show{opacity:1;transform:none;}
+.itc{color:rgba(0,255,136,.5);}
+.ito{color:var(--green);padding-left:14px;display:block;}
+.intro-click{font-family:var(--orb);font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.35);animation:bl2 1.4s ease infinite;}
+@keyframes bl2{0%,100%{opacity:.35}50%{opacity:1}}
+.iscan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,255,.4),var(--cyan),rgba(0,255,255,.4),transparent);animation:iscm 3s ease-in-out infinite;pointer-events:none;}
+@keyframes iscm{0%{top:-2px}100%{top:100vh}}
+
+/* ══════════════════════════════
+   HACK OVERLAY
+══════════════════════════════ */
+#hack{position:fixed;inset:0;z-index:999;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#hack-cv{position:absolute;inset:0;}
+.hack-box{position:relative;z-index:2;width:min(560px,92vw);text-align:center;}
+.hack-title{font-family:var(--orb);font-size:clamp(11px,2vw,20px);letter-spacing:3px;color:var(--cyan);margin-bottom:18px;}
+.hack-log{background:rgba(0,8,0,.9);border:1px solid rgba(0,255,136,.25);border-radius:4px;padding:14px 18px;text-align:left;font-size:11px;line-height:2;min-height:130px;margin-bottom:14px;overflow:hidden;}
+.hl{display:block;opacity:0;animation:hls .1s forwards;}
+@keyframes hls{to{opacity:1}}
+.hbw{background:rgba(0,255,136,.08);border-radius:2px;height:3px;overflow:hidden;margin-bottom:8px;}
+.hb{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--cyan));box-shadow:0 0 6px var(--green);transition:width .04s linear;}
+.hp{font-size:10px;color:var(--green);letter-spacing:2px;text-align:right;margin-bottom:10px;}
+.hf{font-family:var(--orb);font-size:clamp(22px,5vw,52px);font-weight:900;letter-spacing:4px;background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:none;opacity:0;animation:fp .6s forwards;}
+@keyframes fp{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+/* ══════════════════════════════
+   VISITOR SCAN
+══════════════════════════════ */
+#vscan{position:fixed;inset:0;z-index:998;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#vscan-cv{position:absolute;inset:0;}
+.vsbox{position:relative;z-index:2;width:min(540px,92vw);background:rgba(0,5,0,.92);border:1px solid rgba(0,255,136,.3);border-top:2px solid var(--green);border-radius:6px;padding:20px 22px 22px;}
+.vstitle{font-family:var(--orb);font-size:11px;letter-spacing:3px;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.vstitle::after{content:'';flex:1;height:1px;background:rgba(0,255,255,.15);}
+.vslog{font-size:11px;line-height:2;margin-bottom:12px;min-height:110px;}
+.vsl{display:block;opacity:0;animation:hls .15s forwards;}
+.vsbw{background:rgba(0,255,136,.08);border-radius:2px;height:3px;overflow:hidden;margin-bottom:6px;}
+.vsb{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--cyan));box-shadow:0 0 6px var(--green);}
+.vsp{font-size:10px;color:var(--green);letter-spacing:2px;text-align:right;margin-bottom:10px;}
+.vsresult{background:rgba(0,8,0,.85);border:1px solid rgba(0,255,136,.18);border-radius:4px;padding:10px 14px;font-size:10px;line-height:2;display:none;}
+.vrrow{display:flex;justify-content:space-between;border-bottom:1px solid rgba(0,255,255,.06);padding:1px 0;}
+.vrrow:last-child{border:none;}
+.vrk{color:rgba(0,255,255,.4);letter-spacing:.5px;}
+.vrv{color:var(--green);text-align:right;max-width:60%;word-break:break-all;}
+.vrv.w{color:var(--yellow);}
+.vrv a{color:var(--cyan);text-decoration:none;}
+.vsgbtn{display:none;margin-top:12px;width:100%;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.28);color:var(--green);font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:10px;border-radius:4px;cursor:pointer;transition:all .2s;}
+.vsgbtn:hover{background:rgba(0,255,136,.14);box-shadow:0 0 10px rgba(0,255,136,.2);}
+.vsskip{display:none;margin-top:7px;width:100%;background:transparent;border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.25);font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:8px;border-radius:4px;cursor:pointer;transition:all .2s;}
+.vsskip:hover{border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.4);}
+
+/* ══════════════════════════════
+   MAIN
+══════════════════════════════ */
+#main{position:fixed;inset:0;z-index:1;display:none;opacity:0;transition:opacity .8s ease;overflow:hidden;}
+#main.show{display:block;}#main.visible{opacity:1;}
+#bg-cv{position:absolute;inset:0;z-index:0;}
+.sl-ov{position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.22) 2px,rgba(0,0,0,.22) 4px);}
+.sbeam{position:absolute;left:0;right:0;height:2px;z-index:2;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(0,255,255,.2),rgba(0,255,255,.5),rgba(0,255,255,.2),transparent);animation:sbm 5s ease-in-out infinite;}
+@keyframes sbm{0%,100%{top:-2px}50%{top:100%}}
+
+/* TOP/BOTTOM BAR */
+.topbar{position:absolute;top:0;left:0;right:0;height:34px;z-index:10;background:rgba(0,0,18,.92);border-bottom:1px solid rgba(0,255,255,.1);display:flex;align-items:center;padding:0 14px;gap:14px;font-size:9px;letter-spacing:1.5px;}
+.tbl{font-family:var(--orb);font-size:10px;font-weight:700;background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tbi{color:rgba(0,255,255,.4);display:flex;align-items:center;gap:4px;}
+.tbd{width:5px;height:5px;border-radius:50%;animation:sdot 2s ease infinite;}
+.tbd.g{background:var(--green);box-shadow:0 0 4px var(--green);}
+.tbd.y{background:var(--yellow);box-shadow:0 0 4px var(--yellow);animation-delay:.7s;}
+.tbd.r{background:var(--red);box-shadow:0 0 4px var(--red);animation-delay:1.4s;}
+@keyframes sdot{0%,100%{opacity:1}50%{opacity:.2}}
+.tbr{margin-left:auto;display:flex;align-items:center;gap:14px;}
+#tbclock{font-size:10px;letter-spacing:1px;color:rgba(0,255,255,.5);}
+.botbar{position:absolute;bottom:0;left:0;right:0;height:26px;z-index:10;background:rgba(0,0,18,.92);border-top:1px solid rgba(0,255,255,.07);display:flex;align-items:center;padding:0 14px;font-size:9px;color:rgba(255,255,255,.12);letter-spacing:1px;}
+.botr{margin-left:auto;}
+
+/* CORNERS */
+.cdec{position:absolute;z-index:5;pointer-events:none;}
+.ctl{top:34px;left:0;}.ctr{top:34px;right:0;}.cbl{bottom:26px;left:0;}.cbr{bottom:26px;right:0;}
+
+/* ══════════════════════════════
+   LAYOUT
+══════════════════════════════ */
+.layout{
+  position:absolute;top:34px;bottom:26px;left:0;right:0;z-index:3;
+  display:grid;
+  grid-template-columns:240px 1fr 240px;
+  gap:8px;padding:8px;
+}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden;position:relative;animation:panIn .6s ease both;}
+@keyframes panIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,255,.25),transparent);}
+.ph{display:flex;align-items:center;gap:7px;padding:7px 11px;border-bottom:1px solid rgba(0,255,255,.07);font-size:9px;letter-spacing:2px;color:rgba(0,255,255,.45);flex-shrink:0;}
+.phd{margin-left:auto;display:flex;gap:4px;}
+.phdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);}
+
+/* LEFT SCROLL COLUMN */
+.left-col{grid-column:1;display:flex;flex-direction:column;gap:8px;height:100%;overflow:hidden;}
+.left-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px;scrollbar-width:none;}
+.left-scroll::-webkit-scrollbar{display:none;}
+
+/* RIGHT SCROLL COLUMN */
+.right-col{grid-column:3;display:flex;flex-direction:column;gap:8px;height:100%;overflow:hidden;}
+.right-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-left:2px;scrollbar-width:none;}
+.right-scroll::-webkit-scrollbar{display:none;}
+
+/* Panel body */
+.pb{padding:10px 11px;overflow:hidden;}
+
+/* ── TERMINAL ── */
+.tline{font-size:10px;line-height:1.9;display:block;}
+.tc2{color:rgba(0,255,136,.45);}
+.tv{color:var(--green);}
+.ta{color:var(--pink);font-weight:700;}
+.tw2{color:var(--yellow);}
+.cbl2{display:inline-block;width:7px;height:11px;background:var(--green);animation:cb .8s step-end infinite;vertical-align:middle;}
+@keyframes cb{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── NETWORK STATUS ── */
+.nrow{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,255,255,.05);font-size:10px;}
+.nrow:last-child{border:none;}
+.nn{color:rgba(255,255,255,.45);letter-spacing:1px;}
+.ns{display:flex;align-items:center;gap:5px;color:var(--green);font-size:9px;letter-spacing:1px;}
+.nsd{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:sdot 2s ease infinite;}
+.allsys{text-align:center;font-size:8px;letter-spacing:2px;color:var(--green);padding-top:7px;border-top:1px solid rgba(0,255,136,.12);margin-top:7px;text-shadow:0 0 6px var(--green);}
+
+/* ── ACTIVITY LOG ── */
+.logentry{font-size:9px;line-height:1.9;display:block;}
+.lt{color:rgba(0,255,255,.35);}
+.lm{color:rgba(255,255,255,.35);}
+.lok{color:var(--green);}
+.lwarn{color:var(--pink);}
+
+/* ── SYS INFO ── */
+.srow{display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid rgba(0,255,255,.05);}
+.srow:last-child{border:none;}
+.sk{color:rgba(255,255,255,.28);letter-spacing:.5px;}
+.sv{color:rgba(0,255,255,.7);}
+.sv.d{color:var(--red);}
+
+/* ── ENCRYPT ── */
+.enc-ic{font-size:28px;text-align:center;margin:6px 0;filter:drop-shadow(0 0 8px var(--cyan));}
+.enc-t{font-family:var(--orb);font-size:9px;letter-spacing:2px;color:var(--cyan);text-align:center;margin-bottom:2px;}
+.enc-s{font-size:8px;color:rgba(255,255,255,.18);text-align:center;letter-spacing:1px;margin-bottom:8px;}
+.ebr{display:flex;align-items:center;gap:6px;font-size:8px;color:rgba(0,255,255,.3);margin-bottom:4px;}
+.ebar{flex:1;height:2px;background:rgba(0,255,255,.08);overflow:hidden;border-radius:1px;}
+.efill{height:100%;border-radius:1px;animation:ea 2s ease-in-out infinite alternate;}
+.ef1{background:var(--cyan);box-shadow:0 0 4px var(--cyan);animation-delay:0s;}
+.ef2{background:var(--pink);box-shadow:0 0 4px var(--pink);animation-delay:.3s;}
+.ef3{background:var(--green);box-shadow:0 0 4px var(--green);animation-delay:.6s;}
+@keyframes ea{0%{width:35%}100%{width:92%}}
+.qt{font-size:10px;line-height:1.9;color:rgba(0,255,136,.45);font-style:italic;margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,255,136,.1);}
+.qt span{color:rgba(0,255,255,.3);}
+
+/* ── VISITOR PANEL ── */
+.vrow{display:flex;justify-content:space-between;align-items:flex-start;font-size:9px;padding:3px 0;border-bottom:1px solid rgba(0,255,255,.05);}
+.vrow:last-child{border:none;}
+.vk{color:rgba(0,255,255,.35);letter-spacing:.5px;flex-shrink:0;padding-right:4px;}
+.vv{color:rgba(0,255,136,.8);text-align:right;word-break:break-all;}
+.vv.w{color:var(--yellow);}
+.vv a{color:var(--cyan);text-decoration:none;}
+.vloading{font-size:9px;color:rgba(0,255,136,.4);letter-spacing:1px;text-align:center;padding:10px 0;}
+.vgbtn{width:100%;margin-top:8px;padding:7px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);color:var(--green);font-family:var(--mono);font-size:9px;letter-spacing:1px;border-radius:3px;cursor:pointer;transition:all .2s;}
+.vgbtn:hover{background:rgba(0,255,136,.12);box-shadow:0 0 8px rgba(0,255,136,.15);}
+
+/* ══════════════════════════════
+   CENTER PANEL
+══════════════════════════════ */
+.cpanel{
+  grid-column:2;
+  display:flex;flex-direction:column;
+  background:rgba(3,5,18,.75);
+  border:1px solid rgba(0,255,255,.22);
+  border-radius:8px;
+  backdrop-filter:blur(24px);
+  overflow:hidden;position:relative;
+}
+.cpanel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--cyan),var(--green),var(--cyan),var(--pink));background-size:200%;animation:bflow 3s linear infinite;}
+@keyframes bflow{0%{background-position:0}100%{background-position:200%}}
+
+.cp-top{padding:16px 18px 14px;text-align:center;border-bottom:1px solid rgba(0,255,255,.07);flex-shrink:0;}
+.cp-sub{font-size:8px;letter-spacing:3px;color:rgba(0,255,255,.35);margin-bottom:10px;}
+.cp-name{font-family:var(--orb);font-size:clamp(24px,3.5vw,46px);font-weight:900;line-height:1;letter-spacing:2px;background:linear-gradient(135deg,var(--cyan) 0%,#fff 40%,var(--pink) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 14px rgba(0,255,255,.35));margin-bottom:4px;}
+.cp-handle{font-family:var(--orb);font-size:clamp(10px,1.4vw,16px);letter-spacing:4px;background:linear-gradient(90deg,var(--pink),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;}
+.cp-av-wrap{position:relative;width:88px;height:88px;margin:0 auto 12px;}
+.cp-av{width:88px;height:88px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(0,255,255,.12),rgba(0,0,0,.8));border:2px solid rgba(0,255,255,.28);display:flex;align-items:center;justify-content:center;font-family:var(--orb);font-size:24px;font-weight:900;color:var(--cyan);text-shadow:0 0 18px var(--cyan);position:relative;z-index:1;}
+.cp-ring{position:absolute;inset:-5px;border-radius:50%;background:linear-gradient(var(--bg),var(--bg)) padding-box,conic-gradient(var(--cyan),var(--pink),var(--green),var(--cyan)) border-box;border:1px solid transparent;animation:rr 4s linear infinite;}
+.cp-ring2{position:absolute;inset:-11px;border-radius:50%;border:1px dashed rgba(0,255,255,.18);animation:rr 8s linear infinite reverse;}
+@keyframes rr{to{transform:rotate(360deg)}}
+.cp-status{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.18);border-radius:100px;padding:4px 12px;font-size:9px;letter-spacing:2px;color:rgba(0,255,136,.7);margin-bottom:10px;}
+.sdot2{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:sdot 2s ease infinite;}
+.cp-role{font-size:8px;color:rgba(255,255,255,.22);letter-spacing:2px;}
+
+/* ══════════════════════════════
+   3D SOCIAL ICONS SCROLL AREA
+══════════════════════════════ */
+.social-stage{
+  flex:1;overflow:hidden;padding:12px 16px 16px;
+  display:flex;flex-direction:column;gap:0;
+  perspective:1000px;
+  position:relative;
+}
+.social-stage::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:30px;
+  background:linear-gradient(to bottom,rgba(3,5,18,.9),transparent);
+  z-index:2;pointer-events:none;
+}
+.social-stage::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
+  background:linear-gradient(to top,rgba(3,5,18,.9),transparent);
+  z-index:2;pointer-events:none;
+}
+.social-scroll{
+  overflow-y:auto;height:100%;
+  scrollbar-width:none;
+  display:flex;flex-direction:column;gap:7px;
+  padding:4px 0;
+}
+.social-scroll::-webkit-scrollbar{display:none;}
+
+/* 3D LINK CARD */
+.lcard{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 16px;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(0,255,255,.09);
+  border-radius:10px;
+  text-decoration:none;color:#fff;
+  position:relative;overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform .4s cubic-bezier(.2,0,.1,1), border-color .3s, box-shadow .3s, background .3s;
+  will-change:transform;
+  flex-shrink:0;
+  cursor:none;
+}
+
+/* SHIMMER */
+.lcard::before{
+  content:'';position:absolute;top:0;left:-120%;width:70%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  transform:skewX(-15deg);transition:left .6s ease;pointer-events:none;
+}
+.lcard:hover::before{left:160%;}
+
+/* BOTTOM GLOW LINE */
+.lcard::after{
+  content:'';position:absolute;bottom:0;left:15%;right:15%;height:1px;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  border-radius:1px;
+}
+.lcard:hover::after{opacity:1;}
+
+/* 3D TILT on hover — done via JS */
+.lcard:hover{background:rgba(255,255,255,.045);}
+
+/* platform colors */
+.lcard.gh:hover{border-color:rgba(255,255,255,.28);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(255,255,255,.04);}
+.lcard.gh::after{background:rgba(255,255,255,.3);}
+.lcard.fb:hover{border-color:rgba(24,119,242,.45);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(24,119,242,.1);}
+.lcard.fb::after{background:#1877F2;}
+.lcard.ig:hover{border-color:rgba(225,48,108,.45);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(225,48,108,.1);}
+.lcard.ig::after{background:linear-gradient(90deg,#f09433,#dc2743,#bc1888);}
+.lcard.yt:hover{border-color:rgba(255,0,0,.45);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(255,0,0,.1);}
+.lcard.yt::after{background:#FF0000;}
+.lcard.tw:hover{border-color:rgba(29,161,242,.4);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(29,161,242,.08);}
+.lcard.tw::after{background:#1DA1F2;}
+.lcard.li:hover{border-color:rgba(10,102,194,.45);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(10,102,194,.1);}
+.lcard.li::after{background:#0A66C2;}
+.lcard.tt:hover{border-color:rgba(105,201,208,.4);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(105,201,208,.08);}
+.lcard.tt::after{background:#69C9D0;}
+.lcard.tg:hover{border-color:rgba(41,182,246,.4);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(41,182,246,.08);}
+.lcard.tg::after{background:#29B6F6;}
+.lcard.dc:hover{border-color:rgba(88,101,242,.45);box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 20px rgba(88,101,242,.1);}
+.lcard.dc::after{background:#5865F2;}
+
+/* ICON BOX — 3D floating */
+.lic{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07);
+  position:relative;
+  transition:transform .4s cubic-bezier(.2,0,.1,1), box-shadow .4s;
+  transform-style:preserve-3d;
+}
+.lic svg{width:19px;height:19px;position:relative;z-index:1;}
+.lcard:hover .lic{
+  transform:translateZ(12px) rotateY(-8deg);
+}
+/* icon platform bg glow on hover */
+.lcard.gh:hover .lic{background:rgba(255,255,255,.09);box-shadow:0 4px 16px rgba(255,255,255,.08);}
+.lcard.fb:hover .lic{background:rgba(24,119,242,.15);box-shadow:0 4px 16px rgba(24,119,242,.15);}
+.lcard.ig:hover .lic{background:rgba(225,48,108,.15);box-shadow:0 4px 16px rgba(225,48,108,.15);}
+.lcard.yt:hover .lic{background:rgba(255,0,0,.12);box-shadow:0 4px 16px rgba(255,0,0,.12);}
+.lcard.tw:hover .lic{background:rgba(29,161,242,.12);box-shadow:0 4px 16px rgba(29,161,242,.12);}
+.lcard.li:hover .lic{background:rgba(10,102,194,.15);box-shadow:0 4px 16px rgba(10,102,194,.15);}
+.lcard.tt:hover .lic{background:rgba(105,201,208,.12);box-shadow:0 4px 16px rgba(105,201,208,.12);}
+.lcard.tg:hover .lic{background:rgba(41,182,246,.12);box-shadow:0 4px 16px rgba(41,182,246,.12);}
+.lcard.dc:hover .lic{background:rgba(88,101,242,.15);box-shadow:0 4px 16px rgba(88,101,242,.15);}
+
+.lt2{flex:1;transform-style:preserve-3d;}
+.ln{font-family:var(--orb);font-size:11px;font-weight:700;letter-spacing:1.5px;margin-bottom:2px;transition:transform .4s,text-shadow .3s;}
+.lh{font-size:10px;color:rgba(0,255,255,.35);transition:color .3s;}
+.lcard:hover .ln{transform:translateZ(6px);}
+.lcard:hover .lh{color:rgba(0,255,255,.6);}
+.larr{
+  width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:rgba(255,255,255,.2);
+  transition:all .3s;flex-shrink:0;transform-style:preserve-3d;
+}
+.lcard:hover .larr{
+  border-color:var(--green);color:var(--green);
+  background:rgba(0,255,136,.08);
+  box-shadow:0 0 10px rgba(0,255,136,.2);
+  transform:rotate(-45deg) translateZ(6px);
+}
+
+/* scroll 3D parallax — cards in distance get smaller */
+.lcard{opacity:1;transition:transform .4s cubic-bezier(.2,0,.1,1),border-color .3s,box-shadow .3s,background .3s,opacity .3s;}
+
+/* STAGGER ANIM */
+.lcard:nth-child(1){animation:cu .5s .1s both}
+.lcard:nth-child(2){animation:cu .5s .16s both}
+.lcard:nth-child(3){animation:cu .5s .22s both}
+.lcard:nth-child(4){animation:cu .5s .28s both}
+.lcard:nth-child(5){animation:cu .5s .34s both}
+.lcard:nth-child(6){animation:cu .5s .40s both}
+.lcard:nth-child(7){animation:cu .5s .46s both}
+.lcard:nth-child(8){animation:cu .5s .52s both}
+.lcard:nth-child(9){animation:cu .5s .58s both}
+@keyframes cu{from{opacity:0;transform:translateY(20px) rotateX(-8deg)}to{opacity:1;transform:none}}
+
+/* SCROLL INDICATOR */
+.scroll-hint{text-align:center;font-size:8px;letter-spacing:2px;color:rgba(0,255,255,.2);padding:6px 0;animation:shi 2s ease infinite;}
+@keyframes shi{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:.6;transform:translateY(3px)}}
+
+@media(max-width:860px){
+  .left-col,.right-col{display:none;}
+  .cpanel{grid-column:1;}
+  .layout{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div><div id="cur-ring"></div>
+
+<!-- INTRO -->
+<div id="intro">
+  <canvas id="intro-canvas"></canvas>
+  <div class="iscan"></div>
+  <div class="intro-inner">
+    <div class="intro-logo">NTSIX</div>
+    <div class="intro-sub">NETWORK</div>
+    <div class="intro-terminal">
+      <span class="it" id="il1"><span class="itc">root@ntsix:~$</span> ping ntsixofficial.io</span>
+      <span class="it ito" id="il2">PINGING ... response: 6ms ✓</span>
+      <span class="it" id="il3"><span class="itc">root@nt6:~$</span> whoami</span>
+      <span class="it ito" id="il4">RIYAD HOSSAIN // ntsixofficial</span>
+      <span class="it" id="il5"><span class="itc">root@ntsix:~$</span> <span style="color:#fff">_</span><span class="cbl2"></span></span>
+    </div>
+    <div class="intro-click">[ CLICK ANYWHERE TO ENTER ]</div>
+  </div>
+</div>
+
+<!-- HACK -->
+<div id="hack">
+  <canvas id="hack-cv"></canvas>
+  <div class="hack-box">
+    <div class="hack-title">// INITIALIZING SECURE CONNECTION //</div>
+    <div class="hack-log" id="hlog"></div>
+    <div class="hbw"><div class="hb" id="hbar"></div></div>
+    <div class="hp" id="hpct">0%</div>
+    <div class="hf" id="hfinal">WELCOME TO NTSIX WORLD</div>
+  </div>
+</div>
+
+<!-- VISITOR SCAN -->
+<div id="vscan">
+  <canvas id="vscan-cv"></canvas>
+  <div class="vsbox">
+    <div class="vstitle">⚠ VISITOR IDENTIFICATION PROTOCOL</div>
+    <div class="vslog" id="vslog"></div>
+    <div class="vsbw"><div class="vsb" id="vsbar"></div></div>
+    <div class="vsp" id="vspct">0%</div>
+    <div class="vsresult" id="vsresult"></div>
+    <button class="vsgbtn" id="vsgbtn">📍 ENABLE GPS FOR EXACT LOCATION</button>
+    <button class="vsskip" id="vsskip">[ SKIP → ENTER SITE ]</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <canvas id="bg-cv"></canvas>
+  <div class="sl-ov"></div><div class="sbeam"></div>
+
+  <div class="cdec ctl"><svg width="36" height="36"><path d="M0 36L0 0L36 0" fill="none" stroke="rgba(0,255,255,.3)" stroke-width="1.5"/><circle cx="0" cy="0" r="3" fill="rgba(0,255,255,.5)"/></svg></div>
+  <div class="cdec ctr"><svg width="36" height="36"><path d="M36 36L36 0L0 0" fill="none" stroke="rgba(0,255,255,.3)" stroke-width="1.5"/><circle cx="36" cy="0" r="3" fill="rgba(0,255,255,.5)"/></svg></div>
+  <div class="cdec cbl"><svg width="36" height="36"><path d="M0 0L0 36L36 36" fill="none" stroke="rgba(255,45,155,.3)" stroke-width="1.5"/><circle cx="0" cy="36" r="3" fill="rgba(255,45,155,.4)"/></svg></div>
+  <div class="cdec cbr"><svg width="36" height="36"><path d="M36 0L36 36L0 36" fill="none" stroke="rgba(255,45,155,.3)" stroke-width="1.5"/><circle cx="36" cy="36" r="3" fill="rgba(255,45,155,.4)"/></svg></div>
+
+  <div class="topbar">
+    <span class="tbl">⬡ NTSIX NETWORK</span>
+    <span style="color:rgba(0,255,255,.15)">|</span>
+    <span class="tbi"><div class="tbd g"></div>SYS:ONLINE</span>
+    <span class="tbi"><div class="tbd y"></div>NET:SECURE</span>
+    <span class="tbi"><div class="tbd r"></div>TRK:BLOCKED</span>
+    <div class="tbr"><span style="color:var(--green);font-size:9px;">🔒 SECURE</span><span id="tbclock">00:00:00</span></div>
+  </div>
+  <div class="botbar"><span>▶ &nbsp; ⊕ &nbsp; ✉</span><span class="botr">© 2026 NTSIXOFFICIAL. ALL RIGHTS RESERVED.</span></div>
+
+  <div class="layout">
+
+    <!-- LEFT COL -->
+    <div class="left-col" style="animation-delay:.05s">
+      <div class="left-scroll" id="left-scroll">
+
+        <!-- Terminal -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>⌨</span> TERMINAL<div class="phd"><div class="phdot" style="background:#ff5f57"></div><div class="phdot" style="background:#febc2e"></div><div class="phdot" style="background:#28c840"></div></div></div>
+          <div class="pb">
+            <span class="tline"><span class="tc2">root@ntsix:~$</span> <span class="tv">whoami</span></span>
+            <span class="tline" style="padding-left:8px;color:#fff">NTSIX OFFICIAL</span>
+            <span class="tline" style="margin-top:4px"><span class="tc2">root@ntsix:~$</span> <span class="tv">system --info</span></span>
+            <span class="tline" style="padding-left:8px"><span class="tw2">OS</span> <span style="color:rgba(255,255,255,.15)">:</span> <span class="tv">NTSIX OS v3.0</span></span>
+            <span class="tline" style="padding-left:8px"><span class="tw2">USER</span> <span style="color:rgba(255,255,255,.15)">:</span> <span class="tv">root</span></span>
+            <span class="tline" style="padding-left:8px"><span class="tw2">ROLE</span> <span style="color:rgba(255,255,255,.15)">:</span> <span class="tv">developer</span></span>
+            <span class="tline" style="padding-left:8px"><span class="tw2">LEVEL</span><span style="color:rgba(255,255,255,.15)">:</span> <span class="tv">max</span></span>
+            <span class="tline" style="padding-left:8px"><span class="tw2">STATUS</span><span style="color:rgba(255,255,255,.15)">:</span> <span style="color:var(--green)">active</span></span>
+            <span class="tline" style="margin-top:5px"><span class="tc2">root@ntsix:~$</span> <span class="tv">connect --links</span></span>
+            <span class="tline" style="padding-left:8px;color:rgba(0,255,136,.55)">&gt; INITIALIZING...</span>
+            <span class="tline" style="padding-left:8px;color:rgba(0,255,136,.55)">&gt; CONNECTING...</span>
+            <span class="tline" style="padding-left:8px"><span class="ta">&gt; ACCESS GRANTED</span></span>
+            <span class="tline" style="margin-top:5px"><span class="tc2">root@ntsix:~$</span> <span class="cbl2"></span></span>
+          </div>
+        </div>
+
+        <!-- Encrypt -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>🔒</span> ENCRYPTION</div>
+          <div class="pb">
+            <div class="enc-ic">🛡</div>
+            <div class="enc-t">256-BIT AES</div>
+            <div class="enc-s">SECURE PROTOCOL</div>
+            <div class="ebr">AES<div class="ebar"><div class="efill ef1" style="width:88%"></div></div>88%</div>
+            <div class="ebr">SSL<div class="ebar"><div class="efill ef2" style="width:76%"></div></div>76%</div>
+            <div class="ebr">TLS<div class="ebar"><div class="efill ef3" style="width:93%"></div></div>93%</div>
+            <div class="qt"><span>"</span>Stay Anonymous.<br>Stay Secure.<br>Trust No One.<span>"</span></div>
+          </div>
+        </div>
+
+        <!-- Extra: Skills -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>⚡</span> SKILL of NT6</div>
+          <div class="pb">
+            <div class="ebr">JavaScript<div class="ebar"><div class="efill ef1" style="width:92%"></div></div>92%</div>
+            <div class="ebr">React/Next<div class="ebar"><div class="efill ef2" style="width:85%"></div></div>85%</div>
+            <div class="ebr">Python<div class="ebar" style="margin:0"><div class="efill ef3" style="width:90%"></div></div>78%</div>
+            <div class="ebr">Node.js<div class="ebar"><div class="efill ef1" style="width:80%"></div></div>80%</div>
+            <div class="ebr">DevOps<div class="ebar"><div class="efill ef2" style="width:70%"></div></div>70%</div>
+          </div>
+        </div>
+
+        <!-- Extra: Last Login -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>🗓</span> LAST LOGIN</div>
+          <div class="pb">
+            <div style="font-family:var(--orb);font-size:18px;font-weight:700;color:var(--cyan);letter-spacing:2px;" id="ll-date">--.--.----</div>
+            <div style="font-size:11px;color:rgba(0,255,255,.4);margin-top:2px;" id="ll-time">--:--:--</div>
+            <div style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:9px;color:var(--green);letter-spacing:1px;"><div class="nsd"></div>SESSION ACTIVE</div>
+          </div>
+        </div>
+
+      </div><!-- left-scroll -->
+    </div><!-- left-col -->
+
+    <!-- CENTER -->
+    <div class="cpanel">
+      <div class="cp-top">
+        <div class="cp-sub">// DIGITAL IDENTITY TERMINAL</div>
+        <div class="cp-name">RIYAD<br>HOSSAIN</div>
+        <div class="cp-handle">NTSIX </div>
+        <div style="display:flex;justify-content:center;margin-bottom:10px;">
+          <div class="cp-av-wrap">
+            <div class="cp-ring2"></div><div class="cp-ring"></div>
+            <div class="cp-av">NT6</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px;">
+          <div class="cp-status"><div class="sdot2"></div>&gt; STATUS: ONLINE</div>
+        </div>
+        <div class="cp-role">CYBER ENTHUSIAST · Passionate developer · Building cool things on the internet</div>
+      </div>
+
+      <div class="social-stage">
+        <div class="social-scroll" id="social-scroll">
+
+          <a href="https://github.com/ntsixofficial" target="_blank" class="lcard gh">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div>
+            <div class="lt2"><div class="ln">GITHUB</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://facebook.com/ntsixofficial" target="_blank" class="lcard fb">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.49 0-1.955.93-1.955 1.882v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></div>
+            <div class="lt2"><div class="ln">FACEBOOK</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://instagram.com/ntsixofficial" target="_blank" class="lcard ig">
+            <div class="lic"><svg viewBox="0 0 24 24"><defs><linearGradient id="igg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path fill="url(#igg)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
+            <div class="lt2"><div class="ln">INSTAGRAM</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://twitter.com/ntsixofficial" target="_blank" class="lcard tw">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#1DA1F2"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+            <div class="lt2"><div class="ln">TWITTER / X</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://youtube.com/@ntsix846" target="_blank" class="lcard yt">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
+            <div class="lt2"><div class="ln">YOUTUBE</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://linkedin.com/in/ntsixofficial" target="_blank" class="lcard li">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>
+            <div class="lt2"><div class="ln">LINKEDIN</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://tiktok.com/@ntsixofficial" target="_blank" class="lcard tt">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#69C9D0"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></div>
+            <div class="lt2"><div class="ln">TIKTOK</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://t.me/@ntsix" target="_blank" class="lcard tg">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#29B6F6"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
+            <div class="lt2"><div class="ln">TELEGRAM</div><div class="lh">@ntsix</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <a href="https://discord.gg/ntsixofficial" target="_blank" class="lcard dc">
+            <div class="lic"><svg viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.032.054a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></div>
+            <div class="lt2"><div class="ln">DISCORD</div><div class="lh">@ntsixofficial</div></div>
+            <div class="larr">↗</div>
+          </a>
+
+          <div class="scroll-hint">↓ SCROLL FOR MORE ↓</div>
+          <div style="text-align:center;font-size:8px;color:rgba(0,255,255,.15);letter-spacing:2px;padding:8px 0;border-top:1px solid rgba(0,255,255,.05);margin-top:4px;">// THANK YOU FOR VISITING //</div>
+        </div>
+      </div>
+    </div><!-- cpanel -->
+
+    <!-- RIGHT COL -->
+    <div class="right-col" style="animation-delay:.1s">
+      <div class="right-scroll" id="right-scroll">
+
+        <!-- Network Status -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>📡</span> NETWORK STATUS</div>
+          <div class="pb">
+            <div class="nrow"><span class="nn">GITHUB</span><span class="ns"><div class="nsd"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">INSTAGRAM</span><span class="ns"><div class="nsd" style="animation-delay:.2s"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">FACEBOOK</span><span class="ns"><div class="nsd" style="animation-delay:.4s"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">DISCORD</span><span class="ns"><div class="nsd" style="animation-delay:.6s"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">TELEGRAM</span><span class="ns"><div class="nsd" style="animation-delay:.8s"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">YOUTUBE</span><span class="ns"><div class="nsd" style="animation-delay:1s"></div>ONLINE</span></div>
+            <div class="nrow"><span class="nn">TIKTOK</span><span class="ns"><div class="nsd" style="animation-delay:1.2s"></div>ONLINE</span></div>
+            <div class="allsys">ALL SYSTEMS OPERATIONAL</div>
+          </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>📋</span> ACTIVITY LOG</div>
+          <div class="pb">
+            <span class="logentry"><span class="lt" id="lt1">[--:--:--]</span> <span class="lm">Visitor Connected</span></span>
+            <span class="logentry"><span class="lt" id="lt2">[--:--:--]</span> <span class="lm">IP Verified</span></span>
+            <span class="logentry"><span class="lt" id="lt3">[--:--:--]</span> <span class="lm">System Scanned</span></span>
+            <span class="logentry"><span class="lt" id="lt4">[--:--:--]</span> <span class="lok">No Threat Found</span></span>
+            <span class="logentry"><span class="lt" id="lt5">[--:--:--]</span> <span class="lok">Access Granted</span></span>
+          </div>
+        </div>
+
+        <!-- Visitor Info -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>🎯</span> VISITOR INFO</div>
+          <div class="pb" id="vis-panel">
+            <div class="vloading" id="vis-loading">⟳ SCANNING...<span class="cbl2"></span></div>
+          </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="panel" style="flex-shrink:0;">
+          <div class="ph"><span>⚙</span> SYSTEM INFO</div>
+          <div class="pb">
+            <div class="srow"><span class="sk">IP</span><span class="sv" id="sys-ip">FETCHING...</span></div>
+            <div class="srow"><span class="sk">PING</span><span class="sv">7ms</span></div>
+            <div class="srow"><span class="sk">UPTIME</span><span class="sv">24/7</span></div>
+            <div class="srow"><span class="sk">PROTOCOL</span><span class="sv">HTTPS</span></div>
+            <div class="srow"><span class="sk">FIREWALL</span><span class="sv d">ACTIVE</span></div>
+            <div class="srow"><span class="sk">ENCRYPT</span><span class="sv">AES-256</span></div>
+          </div>
+        </div>
+
+      </div><!-- right-scroll -->
+    </div><!-- right-col -->
+
+  </div><!-- layout -->
+</div><!-- main -->
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function lerpR(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(lerpR);})();
+document.querySelectorAll('a,.vsgbtn,.vsskip').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(0,255,136,.7)';cur.style.transform='translate(-50%,-50%) scale(.5)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(0,255,136,.5)';cur.style.transform='translate(-50%,-50%) scale(1)';});
+});
+
+// ── INTRO MATRIX ──
+(function(){
+  const cv=document.getElementById('intro-canvas'),cx=cv.getContext('2d');
+  function r(){cv.width=window.innerWidth;cv.height=window.innerHeight;}r();window.addEventListener('resize',r);
+  const ch='01アカキクNTSIX</>{}[]';const cols=Math.floor(cv.width/16);const drops=Array(cols).fill(1);
+  setInterval(()=>{
+    cx.fillStyle='rgba(0,0,0,.05)';cx.fillRect(0,0,cv.width,cv.height);cx.font='12px Share Tech Mono';
+    drops.forEach((y,i)=>{const c=ch[Math.floor(Math.random()*ch.length)];cx.fillStyle=Math.random()>.95?'#fff':Math.random()>.5?'#00ff88':'rgba(0,255,136,.25)';cx.fillText(c,i*16,y*16);if(y*16>cv.height&&Math.random()>.97)drops[i]=0;drops[i]++;});
+  },60);
+})();
+['il1','il2','il3','il4','il5'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('show'),600+i*500));
+document.getElementById('intro').addEventListener('click',startHack);
+
+// ── VISITOR DATA ──
+let VD={};
+(async function fetchVD(){
+  try{
+    const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();VD.ip=d.ip;
+    document.getElementById('sys-ip').textContent=d.ip;
+    const g=await fetch(`https://ipapi.co/${d.ip}/json/`);const geo=await g.json();
+    VD.city=geo.city||'Unknown';VD.region=geo.region||'';VD.country=geo.country_name||'Unknown';
+    VD.isp=(geo.org||'Unknown');VD.tz=geo.timezone||'Unknown';VD.lat=geo.latitude;VD.lon=geo.longitude;
+  }catch(e){VD.ip='N/A';VD.city='Unknown';VD.country='Unknown';VD.isp='Unknown';}
+  const ua=navigator.userAgent;
+  let br='Unknown';
+  if(ua.includes('Chrome')&&!ua.includes('Edg'))br='Chrome '+(ua.match(/Chrome\/([\d.]+)/)||[])[1];
+  else if(ua.includes('Firefox'))br='Firefox '+(ua.match(/Firefox\/([\d.]+)/)||[])[1];
+  else if(ua.includes('Safari')&&!ua.includes('Chrome'))br='Safari';
+  else if(ua.includes('Edg'))br='Edge';
+  let os='Unknown';
+  if(ua.includes('Windows'))os='Windows';else if(ua.includes('Android'))os='Android';
+  else if(ua.includes('iPhone'))os='iOS iPhone';else if(ua.includes('iPad'))os='iOS iPad';
+  else if(ua.includes('Mac'))os='macOS';else if(ua.includes('Linux'))os='Linux';
+  VD.browser=br;VD.os=os;VD.device=/Mobi|Android|iPhone|iPad/i.test(ua)?'Mobile':'Desktop';
+  VD.screen=`${window.screen.width}x${window.screen.height}`;VD.lang=navigator.language||'?';
+})();
+
+// ── HACK ──
+function startHack(){
+  document.getElementById('intro').style.display='none';
+  const ho=document.getElementById('hack');ho.style.display='flex';
+  const hcv=document.getElementById('hack-cv'),hcx=hcv.getContext('2d');
+  hcv.width=window.innerWidth;hcv.height=window.innerHeight;
+  const hch='01ABCDEF<>{}NTSIX',hcols=Math.floor(hcv.width/14),hd=Array(hcols).fill(1);
+  const hI=setInterval(()=>{hcx.fillStyle='rgba(0,0,0,.08)';hcx.fillRect(0,0,hcv.width,hcv.height);hcx.font='12px Share Tech Mono';hd.forEach((y,i)=>{hcx.fillStyle=Math.random()>.9?'#00ffff':Math.random()>.5?'#00ff88':'rgba(0,255,136,.18)';hcx.fillText(hch[Math.floor(Math.random()*hch.length)],i*14,y*14);if(y*14>hcv.height&&Math.random()>.97)hd[i]=0;hd[i]++;});},40);
+  const log=document.getElementById('hlog'),bar=document.getElementById('hbar'),pct=document.getElementById('hpct'),fin=document.getElementById('hfinal');
+  const msgs=[
+    {t:'<span style="color:rgba(0,255,136,.5)">root@ntsix:~$</span> <span style="color:#00ff88">./init_connection.sh</span>',d:0},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Loading identity matrix...</span>',d:350},
+    {t:'<span style="color:rgba(0,255,255,.6)">&gt; Establishing encrypted tunnel...</span>',d:750},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Verifying digital signature...</span>',d:1100},
+    {t:'<span style="color:rgba(255,230,0,.7)">&gt; Bypassing firewall [████████░░] 80%</span>',d:1500},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Decrypting user profile...</span>',d:1900},
+    {t:'<span style="color:rgba(0,255,255,.7)">&gt; Injecting authentication token...</span>',d:2200},
+    {t:'<span style="color:#00ff88;font-weight:700">&gt; ACCESS GRANTED — Welcome, NTSIX</span>',d:2600},
+  ];
+  msgs.forEach(m=>setTimeout(()=>{const s=document.createElement('span');s.className='hl';s.innerHTML=m.t+'<br>';s.style.animationDelay='0s';log.appendChild(s);log.scrollTop=log.scrollHeight;},m.d));
+  let p=0;const pI=setInterval(()=>{p+=Math.random()*3+.8;if(p>100)p=100;bar.style.width=p+'%';pct.textContent=Math.floor(p)+'%';if(p>=100){clearInterval(pI);setTimeout(()=>{log.style.display='none';document.querySelector('.hbw').style.display='none';pct.style.display='none';document.querySelector('.hack-title').style.display='none';fin.style.display='block';clearInterval(hI);setTimeout(showVScan,1100);},300);}},40);
+}
+
+// ── VISITOR SCAN ──
+function showVScan(){
+  document.getElementById('hack').style.display='none';
+  const vs=document.getElementById('vscan');vs.style.display='flex';
+  const vcv=document.getElementById('vscan-cv'),vcx=vcv.getContext('2d');
+  vcv.width=window.innerWidth;vcv.height=window.innerHeight;
+  const vch='01ABCDEF<>NTSIX',vc=Math.floor(vcv.width/14),vd=Array(vc).fill(1);
+  const vI=setInterval(()=>{vcx.fillStyle='rgba(0,0,0,.1)';vcx.fillRect(0,0,vcv.width,vcv.height);vcx.font='11px Share Tech Mono';vd.forEach((y,i)=>{vcx.fillStyle=Math.random()>.9?'#00ff88':'rgba(0,255,136,.12)';vcx.fillText(vch[Math.floor(Math.random()*vch.length)],i*14,y*14);if(y*14>vcv.height&&Math.random()>.97)vd[i]=0;vd[i]++;});},50);
+  const vlog=document.getElementById('vslog'),vsb=document.getElementById('vsbar'),vsp=document.getElementById('vspct');
+  const sm=[
+    {t:'<span style="color:rgba(0,255,136,.5)">root@ntsix:~$</span> <span style="color:#00ff88">./scan_visitor.sh --deep</span>',d:0},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Detecting IP address...</span>',d:400},
+    {t:'<span style="color:rgba(0,255,255,.6)">&gt; Locating geographic origin...</span>',d:850},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Fingerprinting browser agent...</span>',d:1300},
+    {t:'<span style="color:rgba(0,255,136,.6)">&gt; Analyzing device signature...</span>',d:1700},
+    {t:'<span style="color:rgba(255,230,0,.7)">&gt; Cross-referencing threat database...</span>',d:2100},
+    {t:'<span style="color:rgba(0,255,136,.7)">&gt; No threats detected. Compiling report...</span>',d:2600},
+    {t:'<span style="color:#00ff88;font-weight:700">&gt; SCAN COMPLETE — VISITOR IDENTIFIED</span>',d:3000},
+  ];
+  sm.forEach(m=>setTimeout(()=>{const s=document.createElement('span');s.className='vsl';s.innerHTML=m.t+'<br>';s.style.animationDelay='0s';vlog.appendChild(s);vlog.scrollTop=vlog.scrollHeight;},m.d));
+  let p=0;const pI=setInterval(()=>{p+=Math.random()*2.2+.5;if(p>100)p=100;vsb.style.width=p+'%';vsp.textContent=Math.floor(p)+'%';if(p>=100){clearInterval(pI);setTimeout(()=>showScanResult(vI),300);}},42);
+}
+
+function showScanResult(vI){
+  clearInterval(vI);
+  document.getElementById('vslog').style.display='none';
+  document.querySelector('.vsbw').style.display='none';
+  document.getElementById('vspct').style.display='none';
+  document.querySelector('.vstitle').style.display='none';
+  const d=VD,loc=d.city?`${d.city}${d.region?', '+d.region:''}, ${d.country}`:'Unknown';
+  const vr=document.getElementById('vsresult');
+  vr.innerHTML=`
+    <div class="vrrow"><span class="vrk">IP ADDRESS</span><span class="vrv">${d.ip||'—'}</span></div>
+    <div class="vrrow"><span class="vrk">LOCATION</span><span class="vrv w">${loc}</span></div>
+    <div class="vrrow"><span class="vrk">ISP</span><span class="vrv">${(d.isp||'—').substring(0,22)}</span></div>
+    <div class="vrrow"><span class="vrk">TIMEZONE</span><span class="vrv">${d.tz||'—'}</span></div>
+    <div class="vrrow"><span class="vrk">BROWSER</span><span class="vrv">${d.browser||'—'}</span></div>
+    <div class="vrrow"><span class="vrk">OS</span><span class="vrv">${d.os||'—'}</span></div>
+    <div class="vrrow"><span class="vrk">DEVICE</span><span class="vrv">${d.device||'—'}</span></div>
+    <div class="vrrow"><span class="vrk">SCREEN</span><span class="vrv">${d.screen||'—'}</span></div>
+    <div class="vrrow" id="vr-gps"><span class="vrk">GPS</span><span class="vrv w">PERMISSION REQUIRED</span></div>
+  `;
+  vr.style.display='block';
+  const gb=document.getElementById('vsgbtn'),sk=document.getElementById('vsskip');
+  gb.style.display='block';sk.style.display='block';
+  gb.onclick=()=>{
+    gb.textContent='⟳ REQUESTING GPS...';gb.disabled=true;
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const la=pos.coords.latitude.toFixed(5),lo=pos.coords.longitude.toFixed(5);
+      VD.gpsLat=la;VD.gpsLon=lo;
+      document.getElementById('vr-gps').innerHTML=`<span class="vrk">GPS</span><span class="vrv"><a href="https://www.google.com/maps?q=${la},${lo}" target="_blank">📍 ${la}, ${lo}</a></span>`;
+      gb.textContent='✅ GPS ACQUIRED';setTimeout(()=>gb.style.display='none',1500);
+    },()=>{document.getElementById('vr-gps').innerHTML='<span class="vrk">GPS</span><span class="vrv" style="color:var(--red)">DENIED</span>';gb.textContent='❌ DENIED';setTimeout(()=>gb.style.display='none',1500);});
+  };
+  sk.onclick=enterMain;
+  setTimeout(enterMain,12000);
+}
+
+function enterMain(){
+  document.getElementById('vscan').style.display='none';
+  const m=document.getElementById('main');m.classList.add('show');
+  setTimeout(()=>m.classList.add('visible'),50);
+  initMain();setTimeout(fillVisitorPanel,900);
+}
+
+function fillVisitorPanel(){
+  const d=VD,loc=d.city?`${d.city}${d.region?', '+d.region:''}, ${d.country}`:'Unknown';
+  const murl=d.gpsLat?`https://www.google.com/maps?q=${d.gpsLat},${d.gpsLon}`:d.lat?`https://www.google.com/maps?q=${d.lat},${d.lon}`:null;
+  document.getElementById('vis-panel').innerHTML=`
+    <div class="vrow"><span class="vk">IP</span><span class="vv">${d.ip||'—'}</span></div>
+    <div class="vrow"><span class="vk">LOCATION</span><span class="vv w">${loc}</span></div>
+    <div class="vrow"><span class="vk">ISP</span><span class="vv">${(d.isp||'—').substring(0,20)}</span></div>
+    <div class="vrow"><span class="vk">TZ</span><span class="vv">${d.tz||'—'}</span></div>
+    <div class="vrow"><span class="vk">BROWSER</span><span class="vv">${d.browser||'—'}</span></div>
+    <div class="vrow"><span class="vk">OS</span><span class="vv">${d.os||'—'}</span></div>
+    <div class="vrow"><span class="vk">DEVICE</span><span class="vv">${d.device||'—'}</span></div>
+    <div class="vrow"><span class="vk">SCREEN</span><span class="vv">${d.screen||'—'}</span></div>
+    <div class="vrow"><span class="vk">GPS</span><span class="vv" id="pgps">${d.gpsLat?`<a href="https://maps.google.com?q=${d.gpsLat},${d.gpsLon}" target="_blank">📍 ${d.gpsLat}</a>`:'NOT ENABLED'}</span></div>
+    ${murl&&!d.gpsLat?`<div class="vrow"><span class="vk">MAP</span><span class="vv"><a href="${murl}" target="_blank">IP-MAP 🗺</a></span></div>`:''}
+    ${!d.gpsLat?`<button class="vgbtn" id="pgbtn">📍 REQUEST GPS</button>`:''}
+  `;
+  const pgb=document.getElementById('pgbtn');
+  if(pgb)pgb.onclick=()=>{pgb.textContent='⟳ REQUESTING...';pgb.disabled=true;navigator.geolocation.getCurrentPosition(p=>{const la=p.coords.latitude.toFixed(5),lo=p.coords.longitude.toFixed(5);VD.gpsLat=la;VD.gpsLon=lo;document.getElementById('pgps').innerHTML=`<a href="https://maps.google.com?q=${la},${lo}" target="_blank" style="color:var(--cyan)">📍 ${la}, ${lo}</a>`;pgb.textContent='✅ ACQUIRED';setTimeout(()=>pgb.remove(),1500);},()=>{pgb.textContent='❌ DENIED';setTimeout(()=>pgb.remove(),1500);});};
+}
+
+function initMain(){
+  /* BG */
+  const cv=document.getElementById('bg-cv'),cx=cv.getContext('2d');
+  function r(){cv.width=window.innerWidth;cv.height=window.innerHeight;}r();window.addEventListener('resize',r);
+  function drawBg(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    const g=cx.createRadialGradient(cv.width/2,cv.height,0,cv.width/2,cv.height/2,cv.height);
+    g.addColorStop(0,'rgba(0,30,60,.5)');g.addColorStop(.4,'rgba(40,0,60,.35)');g.addColorStop(1,'rgba(4,5,13,0)');
+    cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);
+    cx.strokeStyle='rgba(0,255,255,.025)';cx.lineWidth=1;
+    for(let x=0;x<cv.width;x+=40){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,cv.height);cx.stroke();}
+    for(let y=0;y<cv.height;y+=40){cx.beginPath();cx.moveTo(0,y);cx.lineTo(cv.width,y);cx.stroke();}
+    const cg=cx.createRadialGradient(cv.width/2,cv.height*.35,0,cv.width/2,cv.height*.35,280);
+    cg.addColorStop(0,'rgba(0,255,255,.05)');cg.addColorStop(.5,'rgba(255,45,155,.025)');cg.addColorStop(1,'transparent');
+    cx.fillStyle=cg;cx.fillRect(0,0,cv.width,cv.height);
+  }
+  drawBg();window.addEventListener('resize',drawBg);
+
+  /* CLOCK */
+  function tick(){
+    const n=new Date();
+    const ts=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+    document.getElementById('tbclock').textContent=ts;
+    const td=`${String(n.getDate()).padStart(2,'0')}.${String(n.getMonth()+1).padStart(2,'0')}.${n.getFullYear()}`;
+    const lld=document.getElementById('ll-date');if(lld)lld.textContent=td;
+    const llt=document.getElementById('ll-time');if(llt)llt.textContent=ts;
+    ['lt1','lt2','lt3','lt4','lt5'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='['+ts+']';});
+  }
+  tick();setInterval(tick,1000);
+
+  /* 3D TILT on social cards */
+  document.querySelectorAll('.lcard').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`perspective(700px) rotateX(${-y*10}deg) rotateY(${x*14}deg) translateZ(8px) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.transform='perspective(700px) rotateX(0) rotateY(0) translateZ(0) scale(1)';
+    });
+  });
+
+  /* SCROLL 3D DEPTH EFFECT — left/right panels */
+  function applyScrollDepth(scrollEl){
+    scrollEl.addEventListener('scroll',()=>{
+      const items=scrollEl.querySelectorAll('.panel,.lcard');
+      const sh=scrollEl.clientHeight;
+      items.forEach(item=>{
+        const r=item.getBoundingClientRect();
+        const spr=scrollEl.getBoundingClientRect();
+        const relTop=r.top-spr.top;
+        const relBottom=r.bottom-spr.top;
+        const center=relTop+(r.height/2);
+        const dist=Math.abs(center-sh/2);
+        const maxDist=sh*.55;
+        const t=Math.min(dist/maxDist,1);
+        const scale=1-t*.08;
+        const opacity=1-t*.5;
+        const tz=-t*30;
+        const rx=center<sh/2?t*4:-t*4;
+        item.style.transform=`perspective(800px) scale(${scale}) translateZ(${tz}px) rotateX(${rx}deg)`;
+        item.style.opacity=opacity;
+      });
+    });
+  }
+  const ls=document.getElementById('left-scroll');
+  const rs=document.getElementById('right-scroll');
+  if(ls)applyScrollDepth(ls);
+  if(rs)applyScrollDepth(rs);
+
+  /* SOCIAL SCROLL 3D */
+  const ss=document.getElementById('social-scroll');
+  if(ss){
+    ss.addEventListener('scroll',()=>{
+      const cards=ss.querySelectorAll('.lcard');
+      const sh=ss.clientHeight;
+      cards.forEach(card=>{
+        const r=card.getBoundingClientRect();
+        const spr=ss.getBoundingClientRect();
+        const center=(r.top-spr.top)+(r.height/2);
+        const dist=Math.abs(center-sh/2);
+        const t=Math.min(dist/(sh*.55),1);
+        const scale=1-t*.1;
+        const opacity=1-t*.55;
+        const tz=-t*40;
+        const rx=center<sh/2?t*5:-t*5;
+        if(!card.matches(':hover')){
+          card.style.transform=`perspective(700px) scale(${scale}) translateZ(${tz}px) rotateX(${rx}deg)`;
+          card.style.opacity=opacity;
+        }
+      });
+    });
+  }
+}
+</script>
+</body>
+</html>
